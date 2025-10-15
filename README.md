@@ -22,34 +22,9 @@ The system also includes **custom exceptions** for error handling: `DuplicateExc
 
 ---
 
-## Architecture and Project Structure
-com.mycompany.biblioteca
-│
-├─ db
-│ └─ Conexion.java # JDBC connection management
-├─ exeptions
-│ ├─ DuplicateExceptionRecord.java
-│ ├─ ErrorSystemException.java
-│ └─ NoExistentResourceException.java
-├─ model
-│ ├─ Book.java # Book entity
-│ ├─ Loan.java # Loan entity
-│ └─ Partner.java # Partner entity
-├─ repository
-│ ├─ Repository.java # Generic CRUD interface
-│ ├─ book/IBook.java
-│ ├─ loan/ILoan.java
-│ └─ partner/IPartner.java
-├─ services
-│ ├─ IServiceLoan.java
-│ ├─ ImplementsLoan.java
-│ ├─ IServiceBook.java
-│ ├─ ImplementsBook.java
-│ ├─ IServicePartner.java
-│ └─ ImplementsPartner.java
-├─ view
-│ └─ BibliotecaView.java # User interface with menus and forms
-└─ Main.java # System initialization and execution
+<img width="567" height="575" alt="Captura desde 2025-10-14 22-06-29" src="https://github.com/user-attachments/assets/b50711b6-8978-41ad-9992-c9dc0f4857a5" />
+
+
 
 
 
