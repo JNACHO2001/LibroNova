@@ -19,14 +19,15 @@ public class ImplementsBook implements IServiceBook {
 
     @Override
     public Book createBook(Book book) {
-        // Validar que el título no esté duplicado
-        try {
+       
+        
+            if (book.getStock() < 0) {
+                 throw new IllegalArgumentException("El stock no puede ser negativo");
+                
+            }
+            
             return bookRepository.create(book);
-        } catch (DuplicateExceptionRecord e) {
-            throw new DuplicateExceptionRecord("A book with this title already exists.");
-        } catch (Exception e) {
-            throw new ErrorSystemException("Error creating the book: " + e.getMessage());
-        }
+       
     }
 
     @Override
