@@ -1,5 +1,6 @@
 package com.mycompany.biblioteca.view;
 
+import com.mycompany.biblioteca.exeptions.DuplicateExceptionRecord;
 import com.mycompany.biblioteca.exeptions.ErrorSystemException;
 import com.mycompany.biblioteca.exeptions.ResourceNotFound;
 import com.mycompany.biblioteca.exeptions.noExistentResourceException;
@@ -9,7 +10,6 @@ import com.mycompany.biblioteca.model.Partner;
 import com.mycompany.biblioteca.services.ImplementsBook;
 import com.mycompany.biblioteca.services.ImplementsLoan;
 import com.mycompany.biblioteca.services.ImplementsPartner;
-import java.awt.HeadlessException;
 import java.time.LocalDate;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -74,7 +74,8 @@ public class BibliotecaView {
     }
 
     private void crearLibro() {
-        String title = JOptionPane.showInputDialog("Título:");
+        try {
+              String title = JOptionPane.showInputDialog("Título:");
         String author = JOptionPane.showInputDialog("Autor:");
           String isbn = JOptionPane.showInputDialog("ISBN:");
         int stock = Integer.parseInt(JOptionPane.showInputDialog("Stock:"));
@@ -88,6 +89,14 @@ public class BibliotecaView {
         bookService.createBook(book);
 
         JOptionPane.showMessageDialog(null, "Libro creado correctamente.");
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(),"Error de negocio",JOptionPane.WARNING_MESSAGE);
+        }catch(DuplicateExceptionRecord e){
+            JOptionPane.showMessageDialog(null, e.getMessage(),"Error ",JOptionPane.WARNING_MESSAGE);
+            
+        
+        }
+      
     }
 
     private void listarLibros() {
