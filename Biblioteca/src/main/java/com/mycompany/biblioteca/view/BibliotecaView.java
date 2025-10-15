@@ -9,6 +9,7 @@ import com.mycompany.biblioteca.model.Partner;
 import com.mycompany.biblioteca.services.ImplementsBook;
 import com.mycompany.biblioteca.services.ImplementsLoan;
 import com.mycompany.biblioteca.services.ImplementsPartner;
+import java.awt.HeadlessException;
 import java.time.LocalDate;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -28,10 +29,10 @@ public class BibliotecaView {
     public void mostrarMenuPrincipal() {
         String menu = "1. Libros\n2. Socios\n3. Préstamos\n4. Salir";
         int opcion;
-
-        do {
+        try {
+             do {
             String input = JOptionPane.showInputDialog(menu);
-            if (input == null) break; // Cancelar
+            if (input == null) break; 
             opcion = Integer.parseInt(input);
 
             switch (opcion) {
@@ -43,11 +44,21 @@ public class BibliotecaView {
             }
 
         } while (opcion != 4);
+            
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Debe ingresar un número válido","ERROR",JOptionPane.WARNING_MESSAGE);
+    
+            
+        }
+
+       
     }
 
     private void menuLibros() {
         String menu = "1. Crear libro\n2. Listar libros\n3. Buscar libro\n4. Eliminar libro\n5. Volver";
-        int opcion = Integer.parseInt(JOptionPane.showInputDialog(menu));
+        
+        try {
+             int opcion = Integer.parseInt(JOptionPane.showInputDialog(menu));
 
         switch (opcion) {
             case 1 -> crearLibro();
@@ -56,6 +67,10 @@ public class BibliotecaView {
             case 4 -> eliminarLibro();
             case 5 -> mostrarMenuPrincipal();
         }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Debe ingresar un número válido","ERROR",JOptionPane.WARNING_MESSAGE);
+        }
+       
     }
 
     private void crearLibro() {
@@ -117,7 +132,8 @@ public class BibliotecaView {
     // ================== Socios ==================
     private void menuSocios() {
         String menu = "1. Crear socio\n2. Listar socios\n3. Buscar socio\n4. Eliminar socio\n5. Volver";
-        int opcion = Integer.parseInt(JOptionPane.showInputDialog(menu));
+        try {
+             int opcion = Integer.parseInt(JOptionPane.showInputDialog(menu));
 
         switch (opcion) {
             case 1 -> crearSocio();
@@ -125,6 +141,9 @@ public class BibliotecaView {
             case 3 -> buscarSocio();
             case 4 -> eliminarSocio();
             case 5 -> mostrarMenuPrincipal();
+        }
+        } catch (NumberFormatException e) {
+             JOptionPane.showMessageDialog(null, "Debe ingresar un número válido","ERROR",JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -157,13 +176,18 @@ public class BibliotecaView {
     }
 
     private void eliminarSocio() {
-        int id = Integer.parseInt(JOptionPane.showInputDialog("ID del socio a eliminar:"));
+        try {
+              int id = Integer.parseInt(JOptionPane.showInputDialog("ID del socio a eliminar:"));
         partnerService.deletePartner(id);
         JOptionPane.showMessageDialog(null, "Socio eliminado.");
+        } catch ( NumberFormatException e) {
+                     JOptionPane.showMessageDialog(null, "Debe ingresar un número válido","ERROR",JOptionPane.WARNING_MESSAGE);
+
+        }
+      
     }
 
-    // ================== Préstamos ==================
-   // ================== Préstamos ==================
+
 private void menuPrestamos() {
     String menu = "1. Crear préstamo\n2. Listar préstamos\n3. Buscar préstamo\n4. Devolver libro\n5. Volver";
     try {
@@ -177,8 +201,8 @@ private void menuPrestamos() {
             case 5 -> mostrarMenuPrincipal();
             default -> JOptionPane.showMessageDialog(null, "Opción inválida");
         }
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
+    } catch (NumberFormatException e) {
+         JOptionPane.showMessageDialog(null, "Debe ingresar un número válido","ERROR",JOptionPane.WARNING_MESSAGE);
     }
 }
 
@@ -200,7 +224,7 @@ private void crearPrestamo() {
 
         loanService.createLoan(loan);
         JOptionPane.showMessageDialog(null, "Préstamo creado correctamente.");
-    } catch (Exception e) {
+    } catch ( NumberFormatException e) {
         JOptionPane.showMessageDialog(null, "Error al crear préstamo: " + e.getMessage());
     }
 }
@@ -220,7 +244,7 @@ private void listarPrestamos() {
                     + "---------------------------------------------------\n";
         }
         
-        JOptionPane.showMessageDialog(null, lista.length() > 0 ? lista : "No hay préstamos.");
+        JOptionPane.showMessageDialog(null, lista,"Prestamos registrados",JOptionPane.PLAIN_MESSAGE);
     } catch (noExistentResourceException e) {
         JOptionPane.showMessageDialog(null, e.getMessage(), "Error de datos", JOptionPane.WARNING_MESSAGE);
     } catch (Exception e) {
@@ -232,17 +256,17 @@ private void buscarPrestamo() {
     try {
         int id = Integer.parseInt(JOptionPane.showInputDialog("ID del préstamo:"));
         Loan loan = loanService.searchLoanById(id);
-        if (loan != null) {
+      
             JOptionPane.showMessageDialog(null, "ID: " + loan.getId() +
                 "\nLibro: " + loan.getBook().getTitle() +
                 "\nSocio: " + loan.getPartner().getName() +
                 "\nEntrega: " + loan.getDeliveryDate() +
                 "\nDevolución: " + (loan.getReturnDate() != null ? loan.getReturnDate() : "Pendiente") +
                 "\nDevuelto: " + (loan.isReturned() ? "Sí" : "No"));
-        } else {
-            JOptionPane.showMessageDialog(null, "Préstamo no encontrado.");
-        }
-    } catch (ErrorSystemException e) {
+        
+    }catch (ResourceNotFound e){
+       JOptionPane.showMessageDialog(null, e.getMessage(),"VACIO",JOptionPane.WARNING_MESSAGE);
+    }  catch (ErrorSystemException e) {
         JOptionPane.showMessageDialog(null,  e.getMessage(), "Error del sistema",JOptionPane.WARNING_MESSAGE);
     }
 }
@@ -251,25 +275,21 @@ private void devolverPrestamo() {
     try {
         int id = Integer.parseInt(JOptionPane.showInputDialog("ID del préstamo a devolver:"));
         Loan loan = loanService.searchLoanById(id);
-        if (loan == null) {
-            JOptionPane.showMessageDialog(null, "Préstamo no encontrado.");
-            return;
-        }
-        if (loan.isReturned()) {
-            JOptionPane.showMessageDialog(null, "El préstamo ya fue devuelto.");
-            return;
-        }
+     
 
         loan.setReturned(true);
         loan.setReturnDate(LocalDate.now());
         loanService.returnLoan(id);
         JOptionPane.showMessageDialog(null, "Préstamo marcado como devuelto.");
     } catch (ResourceNotFound e){
-         JOptionPane.showMessageDialog(null,  e.getMessage(), "Error del sistema",JOptionPane.WARNING_MESSAGE);
+         JOptionPane.showMessageDialog(null,  e.getMessage(), "Error",JOptionPane.WARNING_MESSAGE);
         
     
-    }catch (Exception e){
+    }catch (NumberFormatException e){
          JOptionPane.showMessageDialog(null, "Error al listar préstamos: " + e.getMessage());
+    
+    }catch (ErrorSystemException e){
+        JOptionPane.showMessageDialog(null,e.getMessage(),"Error de negocio",JOptionPane.WARNING_MESSAGE);
     
     }
 }
