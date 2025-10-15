@@ -14,6 +14,7 @@ The system also includes **custom exceptions** for error handling: `DuplicateExc
 ---
 
 ## Technologies and Dependencies
+-**pool:** HikariCP It is a high-speed connection pool library for Java applications.
 - **Language:** Java 17  
 - **Database:** MySQL (using JDBC)  
 - **Connection:** MySQL Connector/J (`mysql-connector-java`)  
