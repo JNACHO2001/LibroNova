@@ -41,12 +41,12 @@ public class IBook implements BookRepository {
 
         } catch (SQLException e) {
             if (e.getErrorCode() == 1062) {
-                                throw new DuplicateExceptionRecord("There is already a book with this title");
+                                throw new DuplicateExceptionRecord("Ya existe un libro con este ISBN");
 
                 
 
             } else {
-                throw  new ErrorSystemException("cannot be created" + e.getMessage());
+                throw  new ErrorSystemException("Error al crear libro" + e.getMessage());
             }
 
         }
@@ -71,7 +71,7 @@ public class IBook implements BookRepository {
                     b.setStock(rs.getInt("stock"));
                     return b;
                 } else {
-                    throw  new ResourceNotFound("No information could be found");
+                    throw  new ResourceNotFound("No  se encontro el libro con este ID " +id);
                 }
             }
 
@@ -119,7 +119,7 @@ public class IBook implements BookRepository {
 
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected == 0) {
-                                    throw  new ResourceNotFound("No information could be found");
+                                    throw  new ResourceNotFound("No se encontro el libro" );
 
                 
             }
@@ -129,9 +129,9 @@ public class IBook implements BookRepository {
 
         } catch (SQLException e) {
             if (e.getErrorCode() == 1062) {
-                throw new DuplicateExceptionRecord("There is already a book with this title");
+                throw new DuplicateExceptionRecord("Ya existe este ISBN en otro libro");
             } else {
-                throw new ErrorSystemException("Error updating the book" + e.getMessage());
+                throw new ErrorSystemException("Error al actulizar libro" + e.getMessage());
             }
         }
     }
@@ -144,12 +144,12 @@ public class IBook implements BookRepository {
             ps.setInt(1, id);
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected == 0) {
-                throw new ResourceNotFound("Book with id not found :" + id);
+                throw new ResourceNotFound("No se encontro el libro con este ID:" + id);
 
             }
 
         } catch (SQLException e) {
-            throw new ErrorSystemException("Error deleting book:" + e.getMessage());
+            throw new ErrorSystemException("Error al eliminar libro:" + e.getMessage());
         }
     }
 
