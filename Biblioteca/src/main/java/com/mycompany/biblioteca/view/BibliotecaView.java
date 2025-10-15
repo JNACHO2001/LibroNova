@@ -61,12 +61,14 @@ public class BibliotecaView {
     private void crearLibro() {
         String title = JOptionPane.showInputDialog("Título:");
         String author = JOptionPane.showInputDialog("Autor:");
+          String isbn = JOptionPane.showInputDialog("ISBN:");
         int stock = Integer.parseInt(JOptionPane.showInputDialog("Stock:"));
 
         Book book = new Book();
         book.setTitle(title);
         book.setAuthor(author);
         book.setStock(stock);
+        book.setIsbn(isbn);
 
         bookService.createBook(book);
 
@@ -74,14 +76,27 @@ public class BibliotecaView {
     }
 
     private void listarLibros() {
-        List<Book> books = bookService.listBooks();
-        StringBuilder sb = new StringBuilder();
+        try {
+             List<Book> books = bookService.listBooks();
+        String lista = "Lsita de libros:\n\n ";
         for (Book b : books) {
-            sb.append(b.getId()).append(" - ").append(b.getTitle())
-              .append(" (").append(b.getStock()).append(")\n");
+            lista += "ID:  " + b.getId() + "\n"
+                        + "Titulo:  " +b.getTitle() + "\n"
+                        + "Autor:  " + b.getAuthor() + "\n"
+                        + "Stock:  " + b.getStock() + "\n"
+                        +" Isbn:     "  +b.getIsbn() +"\n"
+                        + "---------------------------------------------------\n";
+          
         }
-        JOptionPane.showMessageDialog(null, sb.length() > 0 ? sb.toString() : "No hay libros.");
+        JOptionPane.showMessageDialog(null, lista, "Libros Registrados", JOptionPane.INFORMATION_MESSAGE);
+            
+        } catch (ResourceNotFound e) {
+             JOptionPane.showMessageDialog(null, e.getMessage(),"VACIO",JOptionPane.WARNING_MESSAGE);
+            
+        }
+       
     }
+      
 
     private void buscarLibro() {
         int id = Integer.parseInt(JOptionPane.showInputDialog("ID del libro:"));
@@ -193,22 +208,22 @@ private void crearPrestamo() {
 private void listarPrestamos() {
     try {
         List<Loan> loans = loanService.listLoan();
-        StringBuilder sb = new StringBuilder();
+        String lista = "Lista de prestamos:\n\n";
+        
         for (Loan l : loans) {
-            sb.append("ID: ").append(l.getId())
-              .append(" | Libro: ").append(l.getBook().getTitle())
-              .append(" | Socio: ").append(l.getPartner().getName())
-              .append(" | Entrega: ").append(l.getDeliveryDate())
-              .append(" | Devolución: ").append(l.getReturnDate() != null ? l.getReturnDate() : "Pendiente")
-              .append(" | Devuelto: ").append(l.isReturned() ? "Sí" : "No")
-              .append("\n");
+            lista += "ID: " + l.getId() + "\n"
+                    + "Libro: " + (l.getBook() != null ? l.getBook().getTitle() : "Sin libro asignado") + "\n"
+                    + "Socio: " + (l.getPartner() != null ? l.getPartner().getName() : "Sin socio asignado") + "\n"
+                    + "Entrega: " + l.getDeliveryDate() + "\n"
+                    + "Devolucion: " + (l.getReturnDate() != null ? l.getReturnDate() : "pendiente") + "\n"
+                    + "Devuelto: " + (l.isReturned() ? "si" : "no") + "\n"
+                    + "---------------------------------------------------\n";
         }
-        JOptionPane.showMessageDialog(null, sb.length() > 0 ? sb.toString() : "No hay préstamos.");
-    } catch (noExistentResourceException e){
-                     JOptionPane.showMessageDialog(null, e.getMessage(), "Error de datos", JOptionPane.WARNING_MESSAGE);
         
-        
-    }catch (Exception e) {
+        JOptionPane.showMessageDialog(null, lista.length() > 0 ? lista : "No hay préstamos.");
+    } catch (noExistentResourceException e) {
+        JOptionPane.showMessageDialog(null, e.getMessage(), "Error de datos", JOptionPane.WARNING_MESSAGE);
+    } catch (Exception e) {
         JOptionPane.showMessageDialog(null, "Error al listar préstamos: " + e.getMessage());
     }
 }
