@@ -106,3 +106,6 @@ Author
 
 Jose Gomez Guzman
 Academic project: Library Management System in Java
+
+<img width="964" height="644" alt="image" src="https://github.com/user-attachments/assets/961eeeea-20fe-4cd4-bd36-33b813e5ed7f" />
+
