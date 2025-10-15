@@ -86,7 +86,7 @@ public class IPartner implements PartnerRepository {
 
     @Override
     public Partner update(Partner partner) {
-        String sql = "UPDATE partner SET name = ?, document_number = ? WHERE id = ?";
+        String sql = "UPDATE partner SET name = ?  WHERE id = ?";
 
         try (Connection conn = Conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
