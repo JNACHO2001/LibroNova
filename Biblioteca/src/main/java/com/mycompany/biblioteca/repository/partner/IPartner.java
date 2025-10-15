@@ -2,6 +2,8 @@ package com.mycompany.biblioteca.repository.partner;
 
 import com.mycompany.biblioteca.db.Conexion;
 import com.mycompany.biblioteca.exeptions.ErrorSystemException;
+import com.mycompany.biblioteca.exeptions.ResourceNotFound;
+import com.mycompany.biblioteca.exeptions.noExistentResourceException;
 import com.mycompany.biblioteca.model.Partner;
 
 import java.sql.*;
@@ -12,7 +14,7 @@ public class IPartner implements PartnerRepository {
 
     @Override
     public Partner create(Partner partner) {
-        String sql = "INSERT INTO partner (name_) VALUES (?)";
+        String sql = "INSERT INTO partner (name) VALUES (?)";
 
         try (Connection conn = Conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -44,13 +46,16 @@ public class IPartner implements PartnerRepository {
                 if (rs.next()) {
                     Partner partner = new Partner();
                     partner.setId(rs.getInt("id"));
-                    partner.setName(rs.getString("name_"));
+                    partner.setName(rs.getString("name"));
 
                     return partner;
+                }else{
+                    throw  new noExistentResourceException("No se encontro el socio con este ID:"  + id);
+                
                 }
             }
 
-            return null;
+            
 
         } catch (SQLException e) {
             throw new ErrorSystemException("Error al buscar socio: " + e.getMessage());
@@ -67,7 +72,7 @@ public class IPartner implements PartnerRepository {
             while (rs.next()) {
                 Partner partner = new Partner();
                 partner.setId(rs.getInt("id"));
-                partner.setName(rs.getString("name_"));
+                partner.setName(rs.getString("name"));
 
                 partners.add(partner);
             }
@@ -104,7 +109,13 @@ public class IPartner implements PartnerRepository {
         try (Connection conn = Conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
-            ps.executeUpdate();
+            int rs =ps.executeUpdate();
+            
+            if (rs == 0) {
+                throw new ResourceNotFound("No se encontró producto con ID: " + id);
+            }
+            
+            
 
         } catch (SQLException e) {
             throw new ErrorSystemException("Error al eliminar socio: " + e.getMessage());
