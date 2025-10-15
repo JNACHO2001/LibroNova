@@ -2,7 +2,9 @@ package com.mycompany.biblioteca.repository.loan;
 
 import com.mycompany.biblioteca.db.Conexion;
 import com.mycompany.biblioteca.exeptions.ErrorSystemException;
+import com.mycompany.biblioteca.model.Book;
 import com.mycompany.biblioteca.model.Loan;
+import com.mycompany.biblioteca.model.Partner;
 import com.mycompany.biblioteca.repository.Repository;
 
 import java.sql.*;
@@ -15,15 +17,14 @@ public class ILoan implements Repository<Loan, Integer> {
     public Loan create(Loan loan) {
         String sql = "INSERT INTO loan (id_book, id_partner, delivery_date, return_date, returned) VALUES (?,?,?,?,?)";
 
-        try (Connection conn = Conexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = Conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, loan.getBook().getId());
             ps.setInt(2, loan.getPartner().getId());
             ps.setDate(3, Date.valueOf(loan.getDeliveryDate()));
-            
+
             if (loan.getReturnDate() != null) {
-                ps.setDate(4, Date.valueOf(loan.getReturnDate() ));
+                ps.setDate(4, Date.valueOf(loan.getReturnDate()));
             } else {
                 ps.setNull(4, Types.DATE);
             }
@@ -46,10 +47,15 @@ public class ILoan implements Repository<Loan, Integer> {
 
     @Override
     public Loan searchById(Integer id) {
-        String sql = "SELECT * FROM loan WHERE id = ?";
+        String sql = "SELECT l.*, "
+                + "b.title, b.author, b.isbn, b.stock, "
+                + "p.name as partner_name "
+                + "FROM loan l "
+                + "INNER JOIN books b ON l.id_book = b.id "
+                + "INNER JOIN partner p ON l.id_partner = p.id "
+                + "WHERE l.id = ?";
 
-        try (Connection conn = Conexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = Conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -57,15 +63,30 @@ public class ILoan implements Repository<Loan, Integer> {
                 if (rs.next()) {
                     Loan loan = new Loan();
                     loan.setId(rs.getInt("id"));
-                    loan.getBook().setId(rs.getInt("id_book"));
-                    loan.getPartner().setId(rs.getInt("id_partner"));
+                    loan.setIdBook(rs.getInt("id_book"));
+                    loan.setIdPartner(rs.getInt("id_partner"));
                     loan.setDeliveryDate(rs.getDate("delivery_date").toLocalDate());
 
                     if (rs.getDate("return_date") != null) {
                         loan.setReturnDate(rs.getDate("return_date").toLocalDate());
                     }
-
                     loan.setReturned(rs.getBoolean("returned"));
+
+                    // Crear y asignar Book
+                    Book book = new Book();
+                    book.setId(rs.getInt("id_book"));
+                    book.setTitle(rs.getString("title"));
+                    book.setAuthor(rs.getString("author"));
+                    book.setIsbn(rs.getString("isbn"));
+                    book.setStock(rs.getInt("stock"));
+                    loan.setBook(book);
+
+                    // Crear y asignar Partner
+                    Partner partner = new Partner();
+                    partner.setId(rs.getInt("id_partner"));
+                    partner.setName(rs.getString("partner_name"));
+                    loan.setPartner(partner);
+
                     return loan;
                 }
             }
@@ -79,28 +100,45 @@ public class ILoan implements Repository<Loan, Integer> {
 
     @Override
     public List<Loan> searchAll() {
-        String sql = "SELECT * FROM loan";
+        String sql = "SELECT l.*, "
+                + "b.title, b.author, b.isbn, b.stock, "
+                + "p.name as partner_name "
+                + "FROM loan l "
+                + "INNER JOIN books b ON l.id_book = b.id "
+                + "INNER JOIN partner p ON l.id_partner = p.id";
+
         List<Loan> loans = new ArrayList<>();
 
-        try (Connection conn = Conexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = Conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Loan loan = new Loan();
                 loan.setId(rs.getInt("id"));
-                loan.getBook().setId(rs.getInt("id_book"));
-                loan.getPartner().setId(rs.getInt("id_partner"));
+                loan.setIdBook(rs.getInt("id_book"));
+                loan.setIdPartner(rs.getInt("id_partner"));
                 loan.setDeliveryDate(rs.getDate("delivery_date").toLocalDate());
 
                 if (rs.getDate("return_date") != null) {
                     loan.setReturnDate(rs.getDate("return_date").toLocalDate());
                 }
-
                 loan.setReturned(rs.getBoolean("returned"));
+
+                // CREAR los objetos Book y Partner PRIMERO
+                Book book = new Book();
+                book.setId(rs.getInt("id_book"));
+                book.setTitle(rs.getString("title"));
+                book.setAuthor(rs.getString("author"));
+                book.setIsbn(rs.getString("isbn"));
+                book.setStock(rs.getInt("stock"));
+                loan.setBook(book);  // AHORA sí asignar
+
+                Partner partner = new Partner();
+                partner.setId(rs.getInt("id_partner"));
+                partner.setName(rs.getString("partner_name"));
+                loan.setPartner(partner);  // AHORA sí asignar
+
                 loans.add(loan);
             }
-
             return loans;
 
         } catch (SQLException e) {
@@ -112,15 +150,14 @@ public class ILoan implements Repository<Loan, Integer> {
     public Loan update(Loan loan) {
         String sql = "UPDATE loan SET id_book = ?, id_partner = ?, delivery_date = ?, return_date = ?, returned = ? WHERE id = ?";
 
-        try (Connection conn = Conexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = Conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, loan.getBook().getId());
-            ps.setInt(2, loan.getPartner().getId());
+            ps.setInt(1, loan.getIdBook());
+            ps.setInt(2, loan.getIdPartner());
             ps.setDate(3, Date.valueOf(loan.getDeliveryDate()));
 
-            if (loan.getReturnDate()  != null) {
-                ps.setDate(4, Date.valueOf(loan.getReturnDate() ));
+            if (loan.getReturnDate() != null) {
+                ps.setDate(4, Date.valueOf(loan.getReturnDate()));
             } else {
                 ps.setNull(4, Types.DATE);
             }
@@ -140,8 +177,7 @@ public class ILoan implements Repository<Loan, Integer> {
     public void delete(Integer id) {
         String sql = "DELETE FROM loan WHERE id = ?";
 
-        try (Connection conn = Conexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = Conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ps.executeUpdate();
