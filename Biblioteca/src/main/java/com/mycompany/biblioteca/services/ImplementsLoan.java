@@ -9,6 +9,7 @@ import com.mycompany.biblioteca.model.Partner;
 import com.mycompany.biblioteca.repository.book.IBook;
 import com.mycompany.biblioteca.repository.loan.ILoan;
 import com.mycompany.biblioteca.repository.partner.IPartner;
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -31,18 +32,18 @@ public class ImplementsLoan implements IServiceLoan{
         // Validar que el socio exista
         Partner partner = partnerRepository.searchById(loan.getPartner().getId());
         if (partner == null) {
-            throw new noExistentResourceException("the resource does not exist");
+            throw new noExistentResourceException("El recurso no existe");
         }
 
         // Validar que el libro exista
         Book book = bookRepository.searchById(loan.getBook().getId());
         if (book == null) {
-            throw new noExistentResourceException("the resource does not exist");
+            throw new noExistentResourceException("El recurso no existe");
         }
 
         // Validar stock
         if (book.getStock() <= 0) {
-            throw new ErrorSystemException("The book is out of stock.");
+            throw new ErrorSystemException("El libro esta agotado.");
         }
 
         // Crear préstamo
@@ -75,28 +76,30 @@ public Loan returnLoan(int loanId) {
     // Buscar el préstamo
     Loan loan = loanRepository.searchById(loanId);
     if (loan == null) {
-        throw new noExistentResourceException("The loan does not exist.");
+        throw new noExistentResourceException("El prestamo no existe");
     }
-
+    
     // Verificar si ya fue devuelto
     if (loan.isReturned()) {
-        throw new ErrorSystemException("The loan has already been returned.");
+        throw new ErrorSystemException("El libro ya ha sido devuelto");
     }
-
+    
     // Marcar como devuelto
     loan.setReturned(true);
-    loan.setReturnDate(java.time.LocalDate.now());
-
+    loan.setReturnDate(LocalDate.now());
+    
     // Actualizar el préstamo en la base de datos
     Loan updatedLoan = loanRepository.update(loan);
-
-    // Aumentar el stock del libro
-    Book book = bookRepository.searchById(loan.getBook().getId());
+    
+    // Aumentar el stock del libro usando el ID
+    Book book = bookRepository.searchById(loan.getIdBook());  // ✅ Usa getIdBook() en vez de getBook().getId()
     if (book != null) {
         book.setStock(book.getStock() + 1);
         bookRepository.update(book);
+    } else {
+        throw new noExistentResourceException("El libro asociado no existe");
     }
-
+    
     return updatedLoan;
 }
 
