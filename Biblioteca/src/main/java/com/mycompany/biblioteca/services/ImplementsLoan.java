@@ -63,7 +63,16 @@ public class ImplementsLoan implements IServiceLoan{
 
     @Override
     public List<Loan> listLoan() {
-        return loanRepository.searchAll();
+        
+        List<Loan> loans = loanRepository.searchAll();
+        if (loans.isEmpty()) {
+            throw new noExistentResourceException("No hay prestamos que mostrar");
+            
+        }
+        return loans;
+        
+        
+       
     }
 
     @Override
