@@ -2,6 +2,7 @@ package com.mycompany.biblioteca.services;
 
 import com.mycompany.biblioteca.exeptions.DuplicateExceptionRecord;
 import com.mycompany.biblioteca.exeptions.ErrorSystemException;
+import com.mycompany.biblioteca.exeptions.ResourceNotFound;
 import com.mycompany.biblioteca.exeptions.noExistentResourceException;
 import com.mycompany.biblioteca.model.Book;
 import com.mycompany.biblioteca.repository.book.IBook;
@@ -39,7 +40,13 @@ public class ImplementsBook implements IServiceBook {
 
     @Override
     public List<Book> listBooks() {
-        return bookRepository.searchAll();
+        List<Book> books =bookRepository.searchAll();
+        if (books.isEmpty()) {
+            throw new ResourceNotFound("No existen libros");
+            
+        }
+        return  books;
+       
     }
 
     @Override
