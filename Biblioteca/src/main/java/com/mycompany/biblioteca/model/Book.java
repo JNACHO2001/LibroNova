@@ -6,7 +6,7 @@ public class Book {
     private String author;
     private String isbn;
     private int stock;
-    private boolean available;
+    
 
     public Book() {
     }
@@ -16,7 +16,7 @@ public class Book {
         this.author = author;
         this.isbn = isbn;
         this.stock = stock;
-        this.available = available;
+     
     }
 
     public int getId() {
@@ -59,13 +59,7 @@ public class Book {
         this.stock = stock;
     }
 
-    public boolean isAvailable() {
-        return available;
-    }
-
-    public void setAvailable(boolean available) {
-        this.available = available;
-    }
+  
 
     @Override
     public String toString() {
