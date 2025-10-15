@@ -1,5 +1,8 @@
 package com.mycompany.biblioteca.view;
 
+import com.mycompany.biblioteca.exeptions.ErrorSystemException;
+import com.mycompany.biblioteca.exeptions.ResourceNotFound;
+import com.mycompany.biblioteca.exeptions.noExistentResourceException;
 import com.mycompany.biblioteca.model.Book;
 import com.mycompany.biblioteca.model.Loan;
 import com.mycompany.biblioteca.model.Partner;
@@ -145,8 +148,10 @@ public class BibliotecaView {
     }
 
     // ================== Préstamos ==================
-    private void menuPrestamos() {
-        String menu = "1. Crear préstamo\n2. Listar préstamos\n3. Buscar préstamo\n4. Devolver libro\n5. Volver";
+   // ================== Préstamos ==================
+private void menuPrestamos() {
+    String menu = "1. Crear préstamo\n2. Listar préstamos\n3. Buscar préstamo\n4. Devolver libro\n5. Volver";
+    try {
         int opcion = Integer.parseInt(JOptionPane.showInputDialog(menu));
 
         switch (opcion) {
@@ -155,10 +160,15 @@ public class BibliotecaView {
             case 3 -> buscarPrestamo();
             case 4 -> devolverPrestamo();
             case 5 -> mostrarMenuPrincipal();
+            default -> JOptionPane.showMessageDialog(null, "Opción inválida");
         }
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
     }
+}
 
-    private void crearPrestamo() {
+private void crearPrestamo() {
+    try {
         int bookId = Integer.parseInt(JOptionPane.showInputDialog("ID del libro:"));
         int partnerId = Integer.parseInt(JOptionPane.showInputDialog("ID del socio:"));
         LocalDate deliveryDate = LocalDate.now();
@@ -170,37 +180,84 @@ public class BibliotecaView {
         loan.setBook(book);
         loan.setPartner(partner);
         loan.setDeliveryDate(deliveryDate);
+        loan.setReturnDate(null);
+        loan.setReturned(false);
 
         loanService.createLoan(loan);
-        JOptionPane.showMessageDialog(null, "Préstamo creado.");
+        JOptionPane.showMessageDialog(null, "Préstamo creado correctamente.");
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Error al crear préstamo: " + e.getMessage());
     }
+}
 
-    private void listarPrestamos() {
+private void listarPrestamos() {
+    try {
         List<Loan> loans = loanService.listLoan();
         StringBuilder sb = new StringBuilder();
         for (Loan l : loans) {
-            sb.append(l.getId()).append(" - Libro: ").append(l.getBook().getTitle())
-              .append(" - Socio: ").append(l.getPartner().getName())
-              .append(" - Devuelto: ").append(l.isReturned()).append("\n");
+            sb.append("ID: ").append(l.getId())
+              .append(" | Libro: ").append(l.getBook().getTitle())
+              .append(" | Socio: ").append(l.getPartner().getName())
+              .append(" | Entrega: ").append(l.getDeliveryDate())
+              .append(" | Devolución: ").append(l.getReturnDate() != null ? l.getReturnDate() : "Pendiente")
+              .append(" | Devuelto: ").append(l.isReturned() ? "Sí" : "No")
+              .append("\n");
         }
         JOptionPane.showMessageDialog(null, sb.length() > 0 ? sb.toString() : "No hay préstamos.");
+    } catch (noExistentResourceException e){
+                     JOptionPane.showMessageDialog(null, e.getMessage(), "Error de datos", JOptionPane.WARNING_MESSAGE);
+        
+        
+    }catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Error al listar préstamos: " + e.getMessage());
     }
+}
 
-    private void buscarPrestamo() {
+private void buscarPrestamo() {
+    try {
         int id = Integer.parseInt(JOptionPane.showInputDialog("ID del préstamo:"));
         Loan loan = loanService.searchLoanById(id);
         if (loan != null) {
-            JOptionPane.showMessageDialog(null, "Préstamo: Libro: " + loan.getBook().getTitle() +
-                    " - Socio: " + loan.getPartner().getName() + " - Devuelto: " + loan.isReturned());
+            JOptionPane.showMessageDialog(null, "ID: " + loan.getId() +
+                "\nLibro: " + loan.getBook().getTitle() +
+                "\nSocio: " + loan.getPartner().getName() +
+                "\nEntrega: " + loan.getDeliveryDate() +
+                "\nDevolución: " + (loan.getReturnDate() != null ? loan.getReturnDate() : "Pendiente") +
+                "\nDevuelto: " + (loan.isReturned() ? "Sí" : "No"));
         } else {
             JOptionPane.showMessageDialog(null, "Préstamo no encontrado.");
         }
+    } catch (ErrorSystemException e) {
+        JOptionPane.showMessageDialog(null,  e.getMessage(), "Error del sistema",JOptionPane.WARNING_MESSAGE);
     }
+}
 
-    private void devolverPrestamo() {
+private void devolverPrestamo() {
+    try {
         int id = Integer.parseInt(JOptionPane.showInputDialog("ID del préstamo a devolver:"));
+        Loan loan = loanService.searchLoanById(id);
+        if (loan == null) {
+            JOptionPane.showMessageDialog(null, "Préstamo no encontrado.");
+            return;
+        }
+        if (loan.isReturned()) {
+            JOptionPane.showMessageDialog(null, "El préstamo ya fue devuelto.");
+            return;
+        }
+
+        loan.setReturned(true);
+        loan.setReturnDate(LocalDate.now());
         loanService.returnLoan(id);
         JOptionPane.showMessageDialog(null, "Préstamo marcado como devuelto.");
+    } catch (ResourceNotFound e){
+         JOptionPane.showMessageDialog(null,  e.getMessage(), "Error del sistema",JOptionPane.WARNING_MESSAGE);
+        
+    
+    }catch (Exception e){
+         JOptionPane.showMessageDialog(null, "Error al listar préstamos: " + e.getMessage());
+    
     }
+}
+
 
 }
