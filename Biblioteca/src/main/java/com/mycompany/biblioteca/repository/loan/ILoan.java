@@ -2,6 +2,7 @@ package com.mycompany.biblioteca.repository.loan;
 
 import com.mycompany.biblioteca.db.Conexion;
 import com.mycompany.biblioteca.exeptions.ErrorSystemException;
+import com.mycompany.biblioteca.exeptions.ResourceNotFound;
 import com.mycompany.biblioteca.model.Book;
 import com.mycompany.biblioteca.model.Loan;
 import com.mycompany.biblioteca.model.Partner;
@@ -88,10 +89,13 @@ public class ILoan implements Repository<Loan, Integer> {
                     loan.setPartner(partner);
 
                     return loan;
+                } else {
+                    throw new ResourceNotFound("No se encontro el prestamo con este ID" + id);
+
                 }
             }
 
-            return null;
+            
 
         } catch (SQLException e) {
             throw new ErrorSystemException("Error al buscar préstamo: " + e.getMessage());
